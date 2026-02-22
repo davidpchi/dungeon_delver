@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Game Board Tracker</title>
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background: #000;
+    }
+
+    #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    #board {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        touch-action: none;
+    }
+
+    .dot {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: grab;
+        border: 2px solid white;
+        box-shadow: 0 0 6px rgba(0,0,0,0.6);
+        touch-action: none;
+    }
+
+    #controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        z-index: 10;
+    }
+
+    select, button {
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: none;
+    }
+
+    button {
+        background: #1e88e5;
+        color: white;
+        font-weight: bold;
+    }
+
+    #deleteZone {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        background: rgba(200, 0, 0, 0.85);
+        color: white;
+        text-align: center;
+        line-height: 70px;
+        font-weight: bold;
+        z-index: 5;
+    }
+
+    #deleteZone.active {
+        background: rgba(255, 0, 0, 1);
+    }
+</style>
+</head>
+
+<body>
+<div id="app">
+    <div id="controls">
+        <select id="backgroundSelect">
+            <option value="https://cards.scryfall.io/large/front/2/c/2c65185b-6cf0-451d-985e-56aa45d9a57d.jpg?1707897435">Board 1</option>
+            <option value="https://cards.scryfall.io/large/front/5/9/59b11ff8-f118-4978-87dd-509dc0c8c932.jpg?1641306266">Board 2</option>
+            <option value="https://cards.scryfall.io/large/front/6/f/6f509dbe-6ec7-4438-ab36-e20be46c9922.jpg?1753983585">Board 3</option>
+            <option value="https://cards.scryfall.io/large/front/7/0/70b284bd-7a8f-4b60-8238-f746bdc5b236.jpg?1641306270">Board 4</option>
+        </select>
+        <button id="addDotBtn">Add Player Dot</button>
+    </div>
+
+    <div id="board"></div>
+    <div id="deleteZone">Drag Here To Delete</div>
+</div>
+
+<script>
+const board = document.getElementById("board");
+const deleteZone = document.getElementById("deleteZone");
+const addDotBtn = document.getElementById("addDotBtn");
+const backgroundSelect = document.getElementById("backgroundSelect");
+
+board.style.backgroundImage = `url(${backgroundSelect.value})`;
+
+backgroundSelect.addEventListener("change", () => {
+    board.style.backgroundImage = `url(${backgroundSelect.value})`;
+});
+
+function randomColor() {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgb(${r},${g},${b})`;
+}
+
+function createDot() {
+    const dot = document.createElement("div");
+    dot.classList.add("dot");
+    dot.style.backgroundColor = randomColor();
+    dot.style.left = Math.random() * (window.innerWidth - 30) + "px";
+    dot.style.top = Math.random() * (window.innerHeight - 100) + "px";
+    board.appendChild(dot);
+    makeDraggable(dot);
+}
+
+addDotBtn.addEventListener("click", createDot);
+
+function makeDraggable(element) {
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+
+    function pointerDown(e) {
+        isDragging = true;
+        element.setPointerCapture(e.pointerId);
+        offsetX = e.clientX - element.offsetLeft;
+        offsetY = e.clientY - element.offsetTop;
+    }
+
+    function pointerMove(e) {
+        if (!isDragging) return;
+
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+
+        element.style.left = x + "px";
+        element.style.top = y + "px";
+
+        const dzRect = deleteZone.getBoundingClientRect();
+        if (e.clientY > dzRect.top) {
+            deleteZone.classList.add("active");
+        } else {
+            deleteZone.classList.remove("active");
+        }
+    }
+
+    function pointerUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const dzRect = deleteZone.getBoundingClientRect();
+        if (e.clientY > dzRect.top) {
+            element.remove();
+        }
+
+        deleteZone.classList.remove("active");
+        element.releasePointerCapture(e.pointerId);
+    }
+
+    element.addEventListener("pointerdown", pointerDown);
+    element.addEventListener("pointermove", pointerMove);
+    element.addEventListener("pointerup", pointerUp);
+    element.addEventListener("pointercancel", () => isDragging = false);
+}
+</script>
+</body>
+</html>
