@@ -113,19 +113,44 @@ backgroundSelect.addEventListener("change", () => {
     board.style.backgroundImage = `url(${backgroundSelect.value})`;
 });
 
-function randomColor() {
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    return `rgb(${r},${g},${b})`;
+/* 🔹 High-contrast color palette (16 colors) */
+const PLAYER_COLORS = [
+    "#e6194b", // red
+    "#3cb44b", // green
+    "#ffe119", // yellow
+    "#4363d8", // blue
+    "#f58231", // orange
+    "#911eb4", // purple
+    "#46f0f0", // cyan
+    "#f032e6", // magenta
+    "#bcf60c", // lime
+    "#fabebe", // pink
+    "#008080", // teal
+    "#e6beff", // lavender
+    "#9a6324", // brown
+    "#fffac8", // light yellow
+    "#800000", // maroon
+    "#808000"  // olive
+];
+
+let colorIndex = 0;
+
+function getNextColor() {
+    const color = PLAYER_COLORS[colorIndex];
+    colorIndex = (colorIndex + 1) % PLAYER_COLORS.length;
+    return color;
 }
 
 function createDot() {
     const dot = document.createElement("div");
     dot.classList.add("dot");
-    dot.style.backgroundColor = randomColor();
+
+    /* 🔹 Use next palette color instead of random */
+    dot.style.backgroundColor = getNextColor();
+
     dot.style.left = Math.random() * (window.innerWidth - 30) + "px";
     dot.style.top = Math.random() * (window.innerHeight - 100) + "px";
+
     board.appendChild(dot);
     makeDraggable(dot);
 }
